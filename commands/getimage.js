@@ -4,10 +4,12 @@ module.exports = {
     name: 'getimage',
     description: "Renvoie l'image d'un sticker (réponds à un sticker)",
     async execute({ sock, m, from }) {
-        const quoted = m.message.extendedTextMessage?.contextInfo?.quotedMessage;
-        if (!quoted?.stickerMessage) return sock.sendMessage(from, { text: '⚠️ Réponds à un sticker.' }, { quoted: m });
+        const media = await getMediaMessage(m);
+        if (!media || media.type !== 'sticker') {
+            return sock.sendMessage(from, { text: '⚠️ Réponds à un sticker.' }, { quoted: m });
+        }
         try {
-            const buffer = await bufferFromMessage(quoted.stickerMessage, 'sticker');
+            const buffer = await bufferFromMessage(media.message);
             await sock.sendMessage(from, { image: buffer }, { quoted: m });
         } catch (error) {
             await sock.sendMessage(from, { text: `❌ ${error.message}` }, { quoted: m });
