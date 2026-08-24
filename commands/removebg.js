@@ -8,7 +8,7 @@ module.exports = {
     async execute({ sock, m, from }) {
         const apiKey = process.env.REMOVEBG_API_KEY;
         if (!apiKey) return sock.sendMessage(from, { text: '❌ REMOVEBG_API_KEY manquant dans les variables d\'environnement.' }, { quoted: m });
-        const media = getMediaMessage(m);
+        const media = await getMediaMessage(m);
         if (!media || media.type !== 'image') return sock.sendMessage(from, { text: '⚠️ Réponds à une image.' }, { quoted: m });
         try {
             const buffer = await bufferFromMessage(media.message, 'image');

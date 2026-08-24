@@ -7,7 +7,7 @@ module.exports = {
     async execute({ sock, m, from }) {
         const perm = await checkGroupPermissions(sock, m, from);
         if (!perm.ok) return sock.sendMessage(from, { text: perm.reason }, { quoted: m });
-        const media = getMediaMessage(m);
+        const media = await getMediaMessage(m);
         if (!media || media.type !== 'image') return sock.sendMessage(from, { text: '⚠️ Réponds à une image.' }, { quoted: m });
         try {
             const buffer = await bufferFromMessage(media.message, 'image');

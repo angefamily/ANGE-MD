@@ -7,7 +7,7 @@ module.exports = {
     async execute({ sock, m, from, args }) {
         const format = (args[0] || 'png').toLowerCase();
         if (!['png', 'jpeg', 'webp'].includes(format)) return sock.sendMessage(from, { text: '⚠️ Formats : png, jpeg, webp' }, { quoted: m });
-        const media = getMediaMessage(m);
+        const media = await getMediaMessage(m);
         if (!media || media.type !== 'image') return sock.sendMessage(from, { text: '⚠️ Réponds à une image.' }, { quoted: m });
         try {
             const buffer = await bufferFromMessage(media.message, 'image');

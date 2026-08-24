@@ -10,7 +10,7 @@ module.exports = {
         const apiUrl = process.env.IMAGE_TOOLS_API_URL;
         const apiKey = process.env.IMAGE_TOOLS_API_KEY;
         if (!apiUrl || !apiKey) return sock.sendMessage(from, { text: '❌ IMAGE_TOOLS_API_URL / IMAGE_TOOLS_API_KEY manquants.' }, { quoted: m });
-        const media = getMediaMessage(m);
+        const media = await getMediaMessage(m);
         if (!media || media.type !== 'image') return sock.sendMessage(from, { text: '⚠️ Réponds à une image.' }, { quoted: m });
         try {
             const buffer = await bufferFromMessage(media.message, 'image');

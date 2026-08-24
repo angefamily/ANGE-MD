@@ -6,7 +6,7 @@ module.exports = {
     aliases: ['s'],
     description: "Convertit une image en sticker (réponds à une image avec .sticker)",
     async execute({ sock, m, from }) {
-        const media = getMediaMessage(m);
+        const media = await getMediaMessage(m);
         if (!media) {
             return sock.sendMessage(from, { text: '⚠️ Réponds à une image avec .sticker (les vidéos ne sont pas encore supportées).' }, { quoted: m });
         }
@@ -15,7 +15,7 @@ module.exports = {
         }
 
         try {
-            const buffer = await bufferFromMessage(media.message, media.type);
+            const buffer = await bufferFromMessage(media.message);
             const webpBuffer = await sharp(buffer)
                 .resize(512, 512, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
                 .webp()

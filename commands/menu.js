@@ -13,7 +13,7 @@ module.exports = {
     async execute({ sock, m, from }) {
         const { commands } = require('../messageHandler');
         const s = getSettings();
-        const prefix = getConfig().prefix || '.';
+        const prefix = getConfig().prefix || '🪽';
         const total = new Set([...commands.values()].map((c) => c.name)).size;
 
         let text = `╭━━━〔 👼 𝗔𝗡𝗚𝗘-𝗠𝗗 〕━━━╮\n`;
