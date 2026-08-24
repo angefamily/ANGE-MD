@@ -5,7 +5,7 @@ const QRCode = require('qrcode');
 
 const { installErrorGuard } = require('./lib/errorGuard');
 const { startCleanupLoop } = require('./lib/cleanup');
-const { connectToWhatsApp, connectViaQR, getStatus } = require('./whatsapp');
+const { connectToWhatsApp, connectViaQR, getStatus, resumeIfSessionExists } = require('./whatsapp');
 const { getConfig } = require('./lib/config');
 const { getSettings } = require('./lib/botSettings');
 const { commands } = require('./messageHandler');
@@ -71,11 +71,11 @@ app.get('/api/site-info', (req, res) => {
         botName: settings.botName,
         ownerName: settings.ownerName,
         mode: settings.mode,
-        prefix: cfg.prefix || '.',
+        prefix: cfg.prefix || '🪽',
         commandCount,
         channelLink: cfg.channelLink || null,
         groupInviteLink: cfg.groupInviteLink || null,
-        kinggeneratorLink: 'https://neon-king-forge.lovable.app/',
+        angeGeneratorLink: 'https://neon-king-forge.lovable.app/',
     });
 });
 
@@ -89,10 +89,9 @@ app.listen(PORT, () => {
 
 startCleanupLoop();
 
-// Reconnexion automatique au démarrage si une session existe déjà pour ce numéro
-// (essentiel sur Render : évite de re-scanner/re-pairer à chaque redéploiement)
-if (process.env.SESSION_NUMBER) {
-    connectToWhatsApp(process.env.SESSION_NUMBER).catch((e) => {
-        console.error('❌ Erreur de reconnexion automatique:', e.message);
-    });
-}
+// Reprise automatique au démarrage si une session est déjà sauvegardée sur le disque
+// (essentiel sur Render : évite de re-scanner/re-pairer à chaque redéploiement,
+// à condition que le disque persistant soit bien monté sur /app/session — voir render.yaml)
+resumeIfSessionExists().catch((e) => {
+    console.error('❌ Erreur de reconnexion automatique:', e.message);
+});
