@@ -51,7 +51,7 @@ async function handleMessage(sock, m) {
     const text = extractText(m.message).trim();
     if (!text) return;
 
-    const prefix = getConfig().prefix || '.';
+    const prefix = getConfig().prefix || '🪽';
     if (!text.startsWith(prefix)) return;
 
     const [rawName, ...args] = text.slice(prefix.length).trim().split(/\s+/);
