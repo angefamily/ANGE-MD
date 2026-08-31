@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>👼 ANGE-MD — Connexion par code</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Cormorant+Garamond:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --gold: #c9a44c;
+        --gold-light: #e8cf8a;
+        --sky: #eaf4fb;
+        --ivory: #fdfbf5;
+        --ink: #4a4536;
+    }
+    * { box-sizing: border-box; }
+    body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: 'Cormorant Garamond', serif;
+        background: radial-gradient(ellipse at top, var(--sky) 0%, var(--ivory) 55%, #fff 100%);
+        color: var(--ink);
+        padding: 24px;
+    }
+    .card {
+        width: 100%;
+        max-width: 420px;
+        background: rgba(255,255,255,0.75);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(201,164,76,0.4);
+        border-radius: 24px;
+        padding: 40px 32px;
+        text-align: center;
+        box-shadow: 0 20px 60px rgba(201,164,76,0.15), 0 0 0 1px rgba(255,255,255,0.6) inset;
+    }
+    .halo {
+        font-size: 42px;
+        margin-bottom: 8px;
+        filter: drop-shadow(0 0 12px rgba(201,164,76,0.6));
+    }
+    h1 {
+        font-family: 'Cinzel', serif;
+        font-size: 26px;
+        letter-spacing: 2px;
+        margin: 0 0 4px;
+        background: linear-gradient(180deg, #f3dfa0, var(--gold));
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+    }
+    p.sub { margin: 0 0 28px; font-size: 17px; opacity: .75; }
+    input {
+        width: 100%;
+        padding: 14px 16px;
+        border-radius: 14px;
+        border: 1px solid rgba(201,164,76,0.5);
+        background: rgba(255,255,255,0.8);
+        font-size: 17px;
+        font-family: inherit;
+        text-align: center;
+        margin-bottom: 14px;
+        outline: none;
+    }
+    input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,164,76,0.15); }
+    button {
+        width: 100%;
+        padding: 14px 16px;
+        border-radius: 14px;
+        border: none;
+        cursor: pointer;
+        font-family: 'Cinzel', serif;
+        font-size: 15px;
+        letter-spacing: 1px;
+        color: #3a2f14;
+        background: linear-gradient(180deg, var(--gold-light), var(--gold));
+        transition: transform .15s ease, box-shadow .15s ease;
+    }
+    button:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(201,164,76,0.35); }
+    button:disabled { opacity: .6; cursor: default; transform: none; }
+    .code {
+        margin-top: 24px;
+        font-family: 'Cinzel', serif;
+        font-size: 34px;
+        letter-spacing: 6px;
+        color: var(--gold);
+        min-height: 44px;
+    }
+    .hint { font-size: 14px; opacity: .6; margin-top: 8px; }
+    .status { margin-top: 18px; font-size: 15px; opacity: .8; }
+    .status.connected { color: #4a7c4a; font-weight: 600; }
+    a.back { display: inline-block; margin-top: 24px; color: var(--gold); text-decoration: none; font-size: 15px; }
+    a.reset { display: inline-block; margin-top: 10px; color: #b5563a; text-decoration: none; font-size: 13px; opacity: .75; }
+    a.reset:hover { opacity: 1; }
+</style>
+</head>
+<body>
+    <div class="card">
+        <div class="halo">👼</div>
+        <h1>ANGE-MD</h1>
+        <p class="sub">Connexion par code de jumelage</p>
+
+        <input id="number" type="tel" placeholder="Ex : 33612345678 (sans le +)" />
+        <button id="requestBtn">✨ Obtenir mon code</button>
+
+        <div class="code" id="code"></div>
+        <div class="hint" id="hint">Entre ton numéro avec l'indicatif pays, sans le "+".</div>
+        <div class="status" id="status"></div>
+
+        <a class="back" href="/">← Retour au royaume</a>
+        <br>
+        <a class="reset" href="#" id="resetLink">Ça bloque ? Réinitialiser la connexion</a>
+    </div>
+
+<script>
+    const btn = document.getElementById('requestBtn');
+    const numberInput = document.getElementById('number');
+    const codeEl = document.getElementById('code');
+    const hintEl = document.getElementById('hint');
+    const statusEl = document.getElementById('status');
+    const resetLink = document.getElementById('resetLink');
+    let waitTimer = null;
+
+    async function requestCode() {
+        const number = numberInput.value.trim();
+        if (!number) { hintEl.textContent = '⚠️ Entre un numéro valide.'; return; }
+
+        btn.disabled = true;
+        btn.textContent = '✨ Génération...';
+        codeEl.textContent = '';
+        statusEl.textContent = '';
+        statusEl.classList.remove('connected');
+
+        let seconds = 0;
+        hintEl.textContent = 'Démarrage du serveur WhatsApp… ça peut prendre jusqu\'à 60-90 secondes, c\'est normal, ne quitte pas la page.';
+        clearInterval(waitTimer);
+        waitTimer = setInterval(() => {
+            seconds += 3;
+            hintEl.textContent = `Toujours en cours… (${seconds}s) — c'est normal, patiente encore un peu.`;
+        }, 3000);
+
+        try {
+            const res = await fetch('/api/pair', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ number }),
+            });
+            const data = await res.json();
+            clearInterval(waitTimer);
+            if (data.code) {
+                codeEl.textContent = data.code;
+                hintEl.textContent = 'Va dans WhatsApp → Appareils liés → Lier avec un numéro, et entre ce code rapidement (il expire vite).';
+                pollStatus();
+            } else {
+                hintEl.textContent = '❌ ' + (data.error || data.message || 'Erreur inconnue.');
+            }
+        } catch (e) {
+            clearInterval(waitTimer);
+            hintEl.textContent = '❌ Impossible de contacter le serveur.';
+        } finally {
+            btn.disabled = false;
+            btn.textContent = '✨ Obtenir mon code';
+        }
+    }
+
+    async function pollStatus() {
+        try {
+            const res = await fetch('/api/status');
+            const data = await res.json();
+            if (data.status === 'connected') {
+                statusEl.textContent = '🟢 Connecté ! ANGE-MD veille désormais sur ta connexion.';
+                statusEl.classList.add('connected');
+                return;
+            }
+        } catch (_) {}
+        setTimeout(pollStatus, 3000);
+    }
+
+    resetLink.addEventListener('click', async (e) => {
+        e.preventDefault();
+        resetLink.textContent = 'Réinitialisation...';
+        try {
+            await fetch('/api/disconnect', { method: 'POST' });
+            hintEl.textContent = '✅ Connexion réinitialisée, tu peux redemander un code.';
+            codeEl.textContent = '';
+            statusEl.textContent = '';
+            statusEl.classList.remove('connected');
+        } catch (_) {
+            hintEl.textContent = '❌ Impossible de réinitialiser pour le moment.';
+        } finally {
+            resetLink.textContent = 'Ça bloque ? Réinitialiser la connexion';
+        }
+    });
+
+    btn.addEventListener('click', requestCode);
+    numberInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') requestCode(); });
+</script>
+</body>
+</html>
